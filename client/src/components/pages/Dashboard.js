@@ -1,8 +1,9 @@
 // src/components/pages/Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios';  // Add this import statement
 import Spinner from '../layout/Spinner';
+import { classService, dataService } from '../../services/api';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -36,8 +37,14 @@ const Dashboard = () => {
 
   const fetchClasses = async () => {
     try {
-      // Use the full URL to your backend server
+      console.log('Fetching classes data...');
       const res = await axios.get('http://localhost:5000/api/classes');
+      console.log(`Received ${res.data.length} classes from API`);
+      if (res.data.length > 0) {
+        console.log('Sample class:', res.data[0]);
+      } else {
+        console.log('No classes returned from API');
+      }
       setClasses(res.data);
       setLoading(false);
     } catch (err) {
@@ -52,9 +59,8 @@ const Dashboard = () => {
     setError(null);
     try {
       console.log('Sending request to generate mock data...');
-      // Use the full URL to your backend server
-      const response = await axios.post('http://localhost:5000/api/generate');
-      console.log('Response received:', response.data);
+      const response = await dataService.generate();
+      console.log('Response received:', response);
       setDataGenerated(true);
       fetchClasses();
     } catch (err) {
@@ -74,15 +80,14 @@ const Dashboard = () => {
     return <Spinner />;
   }
 
-  // Prepare chart data
   const chartData = {
-    labels: classes.map(c => c.name),
+    labels: classes.map(c => c.name || 'Unknown'),
     datasets: [
       {
         label: 'Program Average Scores',
-        data: classes.map(c => c.yearAverage),
+        data: classes.map(c => c.yearAverage || 0),
         backgroundColor: classes.map(c => {
-          if (c.effectiveness === 'Effective') return 'rgba(46, 204, 113, 0.6)';
+          if (!c.effectiveness || c.effectiveness === 'Effective') return 'rgba(46, 204, 113, 0.6)';
           if (c.effectiveness === 'Neutral') return 'rgba(243, 156, 18, 0.6)';
           return 'rgba(231, 76, 60, 0.6)';
         }),

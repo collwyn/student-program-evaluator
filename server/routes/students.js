@@ -25,20 +25,17 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get student performance metrics
-router.get('/:id/performance', async (req, res) => {
+// In the GET / route in routes/students.js
+router.get('/', async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
-    
-    // Calculate additional metrics here if needed
-    
-    res.json({
-      name: student.name,
-      averageYearGrade: student.averageYearGrade,
-      performanceIndicator: student.performanceIndicator
-    });
+    const students = await Student.find().populate('classes', 'name');
+    console.log(`Returning ${students.length} students`);
+    if (students.length > 0) {
+      console.log('Sample student data:', students[0]);
+    }
+    res.json(students);
   } catch (err) {
+    console.error('Error fetching students:', err);
     res.status(500).json({ message: err.message });
   }
 });

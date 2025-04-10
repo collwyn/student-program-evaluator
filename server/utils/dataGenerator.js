@@ -178,6 +178,8 @@ const determineEffectiveness = (average) => {
 
 // Main function to generate all mock data
 const generateMockData = async () => {
+  console.log('Starting mock data generation...');
+
   // Create classes
   const classNames = [
     'Social Justice', 'STEM', 'Community Involvement', 'Violence Prevention', 
@@ -199,6 +201,8 @@ const generateMockData = async () => {
     const savedClass = await newClass.save();
     classesCreated.push(savedClass);
   }
+
+  console.log('Classes created:', classesCreated.map(c => ({ id: c._id, name: c.name })));
   
   // Create students
   const students = [];
@@ -206,6 +210,25 @@ const generateMockData = async () => {
                     'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'];
   const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 
                    'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson'];
+  
+  // Store class grade data for later use
+  const classGradeData = {};
+  classesCreated.forEach(cls => {
+    classGradeData[cls._id.toString()] = {
+      totalGrades: {},
+      counts: {}
+    };
+    
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    months.forEach(month => {
+      classGradeData[cls._id.toString()].totalGrades[month] = 0;
+      classGradeData[cls._id.toString()].counts[month] = 0;
+    });
+  });
   
   for (let i = 0; i < 100; i++) {
     const firstName = firstNames[getRandomInt(0, firstNames.length - 1)];
@@ -224,7 +247,7 @@ const generateMockData = async () => {
     const performanceType = ['Improved', 'Neutral', 'Struggled'][getRandomInt(0, 2)];
     
     // Generate monthly grades for each class
-    const monthlyGrades = new Map();
+    const monthlyGrades = {};
     
     assignedClasses.forEach(cls => {
       let grades;
@@ -237,21 +260,30 @@ const generateMockData = async () => {
         grades = generateStableGrades(getRandomInt(65, 85));
       }
       
-      monthlyGrades.set(cls._id.toString(), grades);
+      monthlyGrades[cls._id.toString()] = grades;
+      
+      // Add these grades to our class totals for averaging later
+      const classId = cls._id.toString();
+      for (const month in grades) {
+        classGradeData[classId].totalGrades[month] += grades[month];
+        classGradeData[classId].counts[month]++;
+      }
     });
     
     // Generate attendance
-    const attendance = new Map();
+    const attendance = {};
     assignedClasses.forEach(cls => {
-      attendance.set(cls._id.toString(), generateAttendance());
+      attendance[cls._id.toString()] = generateAttendance();
     });
     
     // Calculate average year grade across all classes
     let totalAverage = 0;
-    monthlyGrades.forEach((grades, classId) => {
-      totalAverage += calculateAverage(grades);
-    });
-    const averageYearGrade = totalAverage / assignedClasses.length;
+    let classCount = 0;
+    for (const classId in monthlyGrades) {
+      totalAverage += calculateAverage(monthlyGrades[classId]);
+      classCount++;
+    }
+    const averageYearGrade = totalAverage / classCount;
     
     // Choose one class for the essay (first assigned class)
     const essayClass = assignedClasses[0];
@@ -262,8 +294,8 @@ const generateMockData = async () => {
       age,
       grade,
       classes: studentClasses,
-      monthlyGrades,
-      attendance,
+      monthlyGrades: monthlyGrades, // Store as plain object
+      attendance: attendance, // Store as plain object
       essay,
       averageYearGrade,
       performanceIndicator: performanceType
@@ -285,47 +317,44 @@ const generateMockData = async () => {
     }
   }
   
-  // Calculate class effectiveness
+  console.log(`Created ${students.length} students`);
+  console.log('Sample student:', students[0]);
+  
+  // Update class effectiveness based on the grade data we collected
   for (const cls of classesCreated) {
-    const studentIds = cls.students;
-    
-    // Get all students in this class
-    const classStudents = await Student.find({ _id: { $in: studentIds } });
+    const classId = cls._id.toString();
+    const classData = classGradeData[classId];
     
     // Calculate monthly averages
-    const monthlyTotals = {};
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    const monthlyAverages = {};
+    for (const month in classData.totalGrades) {
+      const count = classData.counts[month];
+      monthlyAverages[month] = count > 0 ? classData.totalGrades[month] / count : 0;
+    }
     
-    months.forEach(month => {
-      let total = 0;
-      let count = 0;
-      
-      classStudents.forEach(student => {
-        const classGrades = student.monthlyGrades.get(cls._id.toString());
-        if (classGrades && classGrades[month]) {
-          total += classGrades[month];
-          count++;
-        }
-      });
-      
-      monthlyTotals[month] = count > 0 ? total / count : 0;
-    });
-    
-    cls.monthlyAverages = monthlyTotals;
+    // Set monthly averages
+    cls.monthlyAverages = monthlyAverages;
     
     // Calculate year average
-    const yearAverage = calculateAverage(monthlyTotals);
+    const yearAverage = calculateAverage(monthlyAverages);
     cls.yearAverage = yearAverage;
     
-    // Determine effectiveness
+    // Set effectiveness
     cls.effectiveness = determineEffectiveness(yearAverage);
     
     await cls.save();
+    
+    console.log(`Updated class ${cls.name}: yearAverage=${yearAverage.toFixed(2)}, effectiveness=${cls.effectiveness}`);
   }
   
+  console.log('Updated classes with effectiveness:', classesCreated.map(c => ({
+    id: c._id,
+    name: c.name,
+    effectiveness: c.effectiveness,
+    yearAverage: c.yearAverage,
+    students: c.students.length
+  })));
+
   return {
     studentsCreated: students.length,
     classesCreated: classesCreated.length

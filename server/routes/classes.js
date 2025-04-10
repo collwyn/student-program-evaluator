@@ -4,12 +4,17 @@ const router = express.Router();
 const Class = require('../models/Class');
 const Student = require('../models/Student');
 
-// Get all classes
+// In the GET / route
 router.get('/', async (req, res) => {
   try {
     const classes = await Class.find();
+    console.log(`Returning ${classes.length} classes`);
+    if (classes.length > 0) {
+      console.log('Sample class data:', classes[0]);
+    }
     res.json(classes);
   } catch (err) {
+    console.error('Error fetching classes:', err);
     res.status(500).json({ message: err.message });
   }
 });
