@@ -1,7 +1,6 @@
 // src/components/pages/Dashboard.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';  // Add this import statement
+import { useNavigate, Link } from 'react-router-dom'; // Combined router imports
 import Spinner from '../layout/Spinner';
 import { classService, dataService } from '../../services/api';
 import { Bar } from 'react-chartjs-2';
@@ -37,15 +36,8 @@ const Dashboard = () => {
 
   const fetchClasses = async () => {
     try {
-      console.log('Fetching classes data...');
-      const res = await axios.get('http://localhost:5000/api/classes');
-      console.log(`Received ${res.data.length} classes from API`);
-      if (res.data.length > 0) {
-        console.log('Sample class:', res.data[0]);
-      } else {
-        console.log('No classes returned from API');
-      }
-      setClasses(res.data);
+      const data = await classService.getAll();
+      setClasses(data);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching classes:', err);
@@ -65,7 +57,6 @@ const Dashboard = () => {
       fetchClasses();
     } catch (err) {
       console.error('Error generating data:', err);
-      // Check if we have a response with an error message
       if (err.response && err.response.data) {
         console.error('Server error message:', err.response.data);
         setError(`Error: ${err.response.data.message}`);
