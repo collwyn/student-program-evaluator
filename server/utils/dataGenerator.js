@@ -1,6 +1,6 @@
 // utils/dataGenerator.js
-const Student = require('../models/Student');
-const Class = require('../models/Class');
+const Student = require('../models/student');
+const Class = require('../models/class');
 const mongoose = require('mongoose');
 
 // Function to generate a random number between min and max (inclusive)
