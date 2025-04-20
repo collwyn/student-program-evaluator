@@ -1,8 +1,8 @@
 // routes/classes.js
 const express = require('express');
 const router = express.Router();
-const Class = require('../models/Class');
-const Student = require('../models/Student');
+const Class = require('../models/class');
+const Student = require('../models/student');
 
 // In the GET / route
 router.get('/', async (req, res) => {

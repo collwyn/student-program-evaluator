@@ -1,8 +1,8 @@
 // routes/dataGeneration.js
 const express = require('express');
 const router = express.Router(); // This line needs to be first
-const Student = require('../models/Student');
-const Class = require('../models/Class');
+const Student = require('../models/student');
+const Class = require('../models/class');
 const { generateMockData } = require('../utils/dataGenerator');
 
 // Generate mock data
