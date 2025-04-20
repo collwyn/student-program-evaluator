@@ -23,8 +23,8 @@ const generateImprovingGrades = () => {
   ];
   
   months.forEach((month, index) => {
-    // Increase by 1-3 points each month
-    const improvement = getRandomInt(1, 3);
+    // Increase by 1-5 points each month (increased from 1-3)
+    const improvement = getRandomInt(1, 5);
     grades[month] = Math.min(startGrade + (improvement * index), 100);
   });
   
@@ -41,15 +41,15 @@ const generateDecliningGrades = () => {
   ];
   
   months.forEach((month, index) => {
-    // Decrease by 1-3 points each month
-    const decline = getRandomInt(1, 3);
-    grades[month] = Math.max(startGrade - (decline * index), 50);
+    // Decrease by 1-5 points each month (increased from 1-3)
+    const decline = getRandomInt(1, 5);
+    grades[month] = Math.max(startGrade - (decline * index), 40); // Lower minimum to 40
   });
   
   return grades;
 };
 
-// Function to generate stable grades with small fluctuations
+// Function to generate stable grades with wider fluctuations
 const generateStableGrades = (baseGrade) => {
   const grades = {};
   const months = [
@@ -58,9 +58,9 @@ const generateStableGrades = (baseGrade) => {
   ];
   
   months.forEach(month => {
-    // Fluctuate by -5 to +5 points
-    const fluctuation = getRandomInt(-5, 5);
-    grades[month] = Math.min(Math.max(baseGrade + fluctuation, 50), 100);
+    // Fluctuate by -10 to +10 points (increased from -5 to +5)
+    const fluctuation = getRandomInt(-10, 10);
+    grades[month] = Math.min(Math.max(baseGrade + fluctuation, 40), 100); // Lower minimum to 40
   });
   
   return grades;
@@ -165,11 +165,11 @@ const determinePerformance = (grades) => {
   }
 };
 
-// Function to determine class effectiveness based on average score
+// Function to determine class effectiveness based on average score - MODIFIED THRESHOLDS
 const determineEffectiveness = (average) => {
-  if (average >= 75) {
+  if (average >= 72) { // Lowered from 75 to 72
     return 'Effective';
-  } else if (average >= 50) {
+  } else if (average >= 55) { // Raised from 50 to 55
     return 'Neutral';
   } else {
     return 'Ineffective';
@@ -230,6 +230,22 @@ const generateMockData = async () => {
     });
   });
   
+  // Create a varied range of base grades for different classes to ensure varied effectiveness
+  const classBaseGrades = {};
+  classesCreated.forEach((cls, index) => {
+    // Assign different base grades to different classes
+    if (index < 3) {
+      // Make some classes have high base grades (likely Effective)
+      classBaseGrades[cls._id.toString()] = getRandomInt(75, 85);
+    } else if (index >= classesCreated.length - 3) {
+      // Make some classes have low base grades (likely Ineffective)
+      classBaseGrades[cls._id.toString()] = getRandomInt(40, 54);
+    } else {
+      // The rest are in the middle (likely Neutral)
+      classBaseGrades[cls._id.toString()] = getRandomInt(55, 71);
+    }
+  });
+  
   for (let i = 0; i < 100; i++) {
     const firstName = firstNames[getRandomInt(0, firstNames.length - 1)];
     const lastName = lastNames[getRandomInt(0, lastNames.length - 1)];
@@ -251,19 +267,33 @@ const generateMockData = async () => {
     
     assignedClasses.forEach(cls => {
       let grades;
+      const classId = cls._id.toString();
+      const baseGrade = classBaseGrades[classId]; // Use the predetermined base grade for this class
       
       if (performanceType === 'Improved') {
+        // For improved performance, start lower than base grade and improve
+        const adjustedStartGrade = Math.max(baseGrade - 15, 40);
         grades = generateImprovingGrades();
+        // Adjust grades to be relative to the class base grade
+        for (const month in grades) {
+          grades[month] = Math.min(adjustedStartGrade + (grades[month] - 55), 100);
+        }
       } else if (performanceType === 'Struggled') {
+        // For struggling performance, start higher than base grade and decline
+        const adjustedStartGrade = Math.min(baseGrade + 15, 95);
         grades = generateDecliningGrades();
+        // Adjust grades to be relative to the class base grade
+        for (const month in grades) {
+          grades[month] = Math.max(adjustedStartGrade - (90 - grades[month]), 40);
+        }
       } else {
-        grades = generateStableGrades(getRandomInt(65, 85));
+        // For neutral performance, fluctuate around the base grade
+        grades = generateStableGrades(baseGrade);
       }
       
-      monthlyGrades[cls._id.toString()] = grades;
+      monthlyGrades[classId] = grades;
       
       // Add these grades to our class totals for averaging later
-      const classId = cls._id.toString();
       for (const month in grades) {
         classGradeData[classId].totalGrades[month] += grades[month];
         classGradeData[classId].counts[month]++;

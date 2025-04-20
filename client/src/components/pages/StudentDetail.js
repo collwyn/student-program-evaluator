@@ -63,7 +63,7 @@ const StudentDetail = () => {
 
   // Generate datasets for each class
   const datasets = student.classes.map((cls, index) => {
-    const classGrades = student.monthlyGrades.get(cls._id);
+    const classGrades = student.monthlyGrades[cls._id];
     const colors = [
       'rgba(46, 204, 113, 0.6)',
       'rgba(52, 152, 219, 0.6)',
@@ -178,7 +178,7 @@ const StudentDetail = () => {
           </thead>
           <tbody>
             {student.classes.map(cls => {
-              const classAttendance = student.attendance.get(cls._id) || {};
+              const classAttendance = student.attendance[cls._id] || {};
               const attendanceValues = months.map(month => classAttendance[month] || 0);
               const averageAttendance = attendanceValues.reduce((a, b) => a + b, 0) / attendanceValues.length;
               

@@ -15,7 +15,9 @@ const Classes = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const res = await axios.get('/api/classes');
+        console.log('Fetching classes...');
+        const res = await axios.get('http://localhost:5000/api/classes');
+        console.log('Classes data received:', res.data);
         setClasses(res.data);
         setFilteredClasses(res.data);
         setLoading(false);
@@ -60,6 +62,9 @@ const Classes = () => {
   if (loading) {
     return <Spinner />;
   }
+
+  console.log('Classes data before render:', classes);
+  console.log('Filtered classes before render:', filteredClasses);
 
   return (
     <div className="classes-page">

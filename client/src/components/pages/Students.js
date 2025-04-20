@@ -15,7 +15,9 @@ const Students = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await axios.get('/api/students');
+        console.log('Fetching students...');
+        const res = await axios.get('http://localhost:5000/api/students');
+        console.log('Students data received:', res.data);
         setStudents(res.data);
         setFilteredStudents(res.data);
         setLoading(false);
@@ -60,6 +62,9 @@ const Students = () => {
   if (loading) {
     return <Spinner />;
   }
+
+  console.log('Students data before render:', students);
+  console.log('Filtered students before render:', filteredStudents);
 
   return (
     <div className="students-page">

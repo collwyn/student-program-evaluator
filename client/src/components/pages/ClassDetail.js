@@ -214,7 +214,7 @@ const ClassDetail = () => {
           <tbody>
             {students.map(student => {
               // Calculate the student's average in this specific class
-              const classGrades = student.monthlyGrades.get(classData._id);
+              const classGrades = student.monthlyGrades[classData._id];
               const classGradeValues = classGrades ? Object.values(classGrades) : [];
               const classAverage = classGradeValues.length > 0
                 ? classGradeValues.reduce((a, b) => a + b, 0) / classGradeValues.length
