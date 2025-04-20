@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../layout/Spinner';
 import EffectivenessIndicator from '../layout/EffectivenessIndicator';
+import { classService } from '../../services/api';
 
 const Classes = () => {
   const [classes, setClasses] = useState([]);
@@ -16,7 +17,7 @@ const Classes = () => {
     const fetchClasses = async () => {
       try {
         console.log('Fetching classes...');
-        const res = await axios.get('http://localhost:5000/api/classes');
+        const res = await classService.getAll();
         console.log('Classes data received:', res.data);
         setClasses(res.data);
         setFilteredClasses(res.data);

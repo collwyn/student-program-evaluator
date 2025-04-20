@@ -37,7 +37,7 @@ const Dashboard = () => {
 
   const fetchClasses = async () => {
     try {
-      const data = await axios.get('http://localhost:5000/api/classes');
+      const data = await classService.getAll();
       setClasses(data.data);
       setLoading(false);
     } catch (err) {
@@ -52,7 +52,7 @@ const Dashboard = () => {
     setError(null);
     try {
       console.log('Sending request to generate mock data...');
-      const response = await axios.post('http://localhost:5000/api/generate');
+      const response = await dataService.generate();
       console.log('Response received:', response);
       setDataGenerated(true);
       fetchClasses();

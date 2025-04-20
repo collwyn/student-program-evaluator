@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../layout/Spinner';
 import PerformanceIndicator from '../layout/PerformanceIndicator';
+import { studentService } from '../../services/api';
 
 const Students = () => {
   const [students, setStudents] = useState([]);
@@ -16,7 +17,7 @@ const Students = () => {
     const fetchStudents = async () => {
       try {
         console.log('Fetching students...');
-        const res = await axios.get('http://localhost:5000/api/students');
+        const res = await studentService.getAll();
         console.log('Students data received:', res.data);
         setStudents(res.data);
         setFilteredStudents(res.data);
