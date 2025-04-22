@@ -38,11 +38,12 @@ const Dashboard = () => {
   const fetchClasses = async () => {
     try {
       const data = await classService.getAll();
-      setClasses(data.data);
+      setClasses(Array.isArray(data.data) ? data.data : []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching classes:', err);
       setError('Failed to fetch classes');
+      setClasses([]); // Ensure classes is always an array
       setLoading(false);
     }
   };
@@ -73,17 +74,18 @@ const Dashboard = () => {
   }
 
   const chartData = {
-    labels: classes && classes.length > 0 ? classes.map(c => c.name || 'Unknown') : [],
+    labels: classes && classes.length > 0 ? classes.map(c => c?.name || 'Unknown') : [],
     datasets: [
       {
         label: 'Program Average Scores',
-        data: classes && classes.length > 0 ? classes.map(c => c.yearAverage || 0) : [],
+        data: classes && classes.length > 0 ? classes.map(c => c?.yearAverage || 0) : [],
         backgroundColor: classes && classes.length > 0 ? classes.map(c => {
-          if (!c.effectiveness || c.effectiveness === 'Effective') return 'rgba(46, 204, 113, 0.6)';
+          if (!c || !c.effectiveness || c.effectiveness === 'Effective') return 'rgba(46, 204, 113, 0.6)';
           if (c.effectiveness === 'Neutral') return 'rgba(243, 156, 18, 0.6)';
           return 'rgba(231, 76, 60, 0.6)';
         }) : [],
         borderColor: classes && classes.length > 0 ? classes.map(c => {
+          if (!c || !c.effectiveness) return 'rgba(39, 174, 96, 1)';
           if (c.effectiveness === 'Effective') return 'rgba(39, 174, 96, 1)';
           if (c.effectiveness === 'Neutral') return 'rgba(211, 84, 0, 1)';
           return 'rgba(192, 57, 43, 1)';
@@ -115,7 +117,9 @@ const Dashboard = () => {
         callbacks: {
           afterLabel: function(context) {
             const index = context.dataIndex;
-            return `Effectiveness: ${classes[index].effectiveness}`;
+            return classes && classes[index] ? 
+              `Effectiveness: ${classes[index].effectiveness || 'Unknown'}` : 
+              'Effectiveness: Unknown';
           }
         }
       },
@@ -154,7 +158,7 @@ const Dashboard = () => {
       )}
 
       <div className="card">
-        {classes.length > 0 ? (
+        {classes && classes.length > 0 ? (
           <Bar data={chartData} options={chartOptions} />
         ) : (
           <p>No class data available. Click "Generate Mock Data" to create sample data.</p>
@@ -162,47 +166,47 @@ const Dashboard = () => {
       </div>
 
       <div className="grid">
-      <div className="card">
-  <h3>Top Performing Programs</h3>
-  {classes && classes.filter(c => c.effectiveness === 'Effective').length > 0 ? (
-    <ul>
-      {classes
-        .filter(c => c.effectiveness === 'Effective')
-        .sort((a, b) => b.yearAverage - a.yearAverage)
-        .slice(0, 3)
-        .map(c => (
-          <li key={c._id}>
-            <Link to={`/classes/${c._id}`}>
-              {c.name} - {c.yearAverage.toFixed(2)}%
-            </Link>
-          </li>
-        ))}
-    </ul>
-  ) : (
-    <p>No effective programs found.</p>
-  )}
-</div>
+        <div className="card">
+          <h3>Top Performing Programs</h3>
+          {classes && classes.filter(c => c && c.effectiveness === 'Effective').length > 0 ? (
+            <ul>
+              {classes
+                .filter(c => c && c.effectiveness === 'Effective')
+                .sort((a, b) => (b?.yearAverage || 0) - (a?.yearAverage || 0))
+                .slice(0, 3)
+                .map(c => (
+                  <li key={c._id}>
+                    <Link to={`/classes/${c._id}`}>
+                      {c.name} - {(c?.yearAverage || 0).toFixed(2)}%
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p>No effective programs found.</p>
+          )}
+        </div>
 
-<div className="card">
-  <h3>Programs Needing Improvement</h3>
-  {classes && classes.filter(c => c.effectiveness === 'Ineffective').length > 0 ? (
-    <ul>
-      {classes
-        .filter(c => c.effectiveness === 'Ineffective')
-        .sort((a, b) => a.yearAverage - b.yearAverage)
-        .slice(0, 3)
-        .map(c => (
-          <li key={c._id}>
-            <Link to={`/classes/${c._id}`}>
-              {c.name} - {c.yearAverage.toFixed(2)}%
-            </Link>
-          </li>
-        ))}
-    </ul>
-  ) : (
-    <p>No ineffective programs found.</p>
-  )}
-</div>
+        <div className="card">
+          <h3>Programs Needing Improvement</h3>
+          {classes && classes.filter(c => c && c.effectiveness === 'Ineffective').length > 0 ? (
+            <ul>
+              {classes
+                .filter(c => c && c.effectiveness === 'Ineffective')
+                .sort((a, b) => (a?.yearAverage || 0) - (b?.yearAverage || 0))
+                .slice(0, 3)
+                .map(c => (
+                  <li key={c._id}>
+                    <Link to={`/classes/${c._id}`}>
+                      {c.name} - {(c?.yearAverage || 0).toFixed(2)}%
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p>No ineffective programs found.</p>
+          )}
+        </div>
 
         <div className="card">
           <h3>Quick Links</h3>
