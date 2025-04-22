@@ -73,21 +73,21 @@ const Dashboard = () => {
   }
 
   const chartData = {
-    labels: classes.map(c => c.name || 'Unknown'),
+    labels: classes && classes.length > 0 ? classes.map(c => c.name || 'Unknown') : [],
     datasets: [
       {
         label: 'Program Average Scores',
-        data: classes.map(c => c.yearAverage || 0),
-        backgroundColor: classes.map(c => {
+        data: classes && classes.length > 0 ? classes.map(c => c.yearAverage || 0) : [],
+        backgroundColor: classes && classes.length > 0 ? classes.map(c => {
           if (!c.effectiveness || c.effectiveness === 'Effective') return 'rgba(46, 204, 113, 0.6)';
           if (c.effectiveness === 'Neutral') return 'rgba(243, 156, 18, 0.6)';
           return 'rgba(231, 76, 60, 0.6)';
-        }),
-        borderColor: classes.map(c => {
+        }) : [],
+        borderColor: classes && classes.length > 0 ? classes.map(c => {
           if (c.effectiveness === 'Effective') return 'rgba(39, 174, 96, 1)';
           if (c.effectiveness === 'Neutral') return 'rgba(211, 84, 0, 1)';
           return 'rgba(192, 57, 43, 1)';
-        }),
+        }) : [],
         borderWidth: 1,
       },
     ],
@@ -162,47 +162,47 @@ const Dashboard = () => {
       </div>
 
       <div className="grid">
-        <div className="card">
-          <h3>Top Performing Programs</h3>
-          {classes.filter(c => c.effectiveness === 'Effective').length > 0 ? (
-            <ul>
-              {classes
-                .filter(c => c.effectiveness === 'Effective')
-                .sort((a, b) => b.yearAverage - a.yearAverage)
-                .slice(0, 3)
-                .map(c => (
-                  <li key={c._id}>
-                    <Link to={`/classes/${c._id}`}>
-                      {c.name} - {c.yearAverage.toFixed(2)}%
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          ) : (
-            <p>No effective programs found.</p>
-          )}
-        </div>
+      <div className="card">
+  <h3>Top Performing Programs</h3>
+  {classes && classes.filter(c => c.effectiveness === 'Effective').length > 0 ? (
+    <ul>
+      {classes
+        .filter(c => c.effectiveness === 'Effective')
+        .sort((a, b) => b.yearAverage - a.yearAverage)
+        .slice(0, 3)
+        .map(c => (
+          <li key={c._id}>
+            <Link to={`/classes/${c._id}`}>
+              {c.name} - {c.yearAverage.toFixed(2)}%
+            </Link>
+          </li>
+        ))}
+    </ul>
+  ) : (
+    <p>No effective programs found.</p>
+  )}
+</div>
 
-        <div className="card">
-          <h3>Programs Needing Improvement</h3>
-          {classes.filter(c => c.effectiveness === 'Ineffective').length > 0 ? (
-            <ul>
-              {classes
-                .filter(c => c.effectiveness === 'Ineffective')
-                .sort((a, b) => a.yearAverage - b.yearAverage)
-                .slice(0, 3)
-                .map(c => (
-                  <li key={c._id}>
-                    <Link to={`/classes/${c._id}`}>
-                      {c.name} - {c.yearAverage.toFixed(2)}%
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          ) : (
-            <p>No ineffective programs found.</p>
-          )}
-        </div>
+<div className="card">
+  <h3>Programs Needing Improvement</h3>
+  {classes && classes.filter(c => c.effectiveness === 'Ineffective').length > 0 ? (
+    <ul>
+      {classes
+        .filter(c => c.effectiveness === 'Ineffective')
+        .sort((a, b) => a.yearAverage - b.yearAverage)
+        .slice(0, 3)
+        .map(c => (
+          <li key={c._id}>
+            <Link to={`/classes/${c._id}`}>
+              {c.name} - {c.yearAverage.toFixed(2)}%
+            </Link>
+          </li>
+        ))}
+    </ul>
+  ) : (
+    <p>No ineffective programs found.</p>
+  )}
+</div>
 
         <div className="card">
           <h3>Quick Links</h3>
