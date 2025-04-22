@@ -1,8 +1,11 @@
 // src/services/api.js
 import axios from 'axios';
 
-// Set the base URL for API requests
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Set the base URL for API requests - handle both local development and production
+const API_URL = process.env.REACT_APP_API_URL || 
+                (window.location.hostname === 'localhost' 
+                 ? 'http://localhost:5000/api' 
+                 : 'https://student-program-evaluator-backend.onrender.com/api');
 
 // Create an axios instance with default config
 const api = axios.create({
@@ -18,10 +21,10 @@ export const studentService = {
   getAll: async () => {
     try {
       const response = await api.get('/students');
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error('Error fetching students:', error);
-      throw error;
+      return { data: [] };
     }
   },
   
@@ -29,10 +32,10 @@ export const studentService = {
   getById: async (id) => {
     try {
       const response = await api.get(`/students/${id}`);
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error(`Error fetching student ${id}:`, error);
-      throw error;
+      return { data: null };
     }
   },
   
@@ -40,10 +43,10 @@ export const studentService = {
   getPerformance: async (id) => {
     try {
       const response = await api.get(`/students/${id}/performance`);
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error(`Error fetching student ${id} performance:`, error);
-      throw error;
+      return { data: null };
     }
   }
 };
@@ -54,10 +57,10 @@ export const classService = {
   getAll: async () => {
     try {
       const response = await api.get('/classes');
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error('Error fetching classes:', error);
-      throw error;
+      return { data: [] };
     }
   },
   
@@ -65,10 +68,10 @@ export const classService = {
   getById: async (id) => {
     try {
       const response = await api.get(`/classes/${id}`);
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error(`Error fetching class ${id}:`, error);
-      throw error;
+      return { data: null };
     }
   },
   
@@ -76,10 +79,10 @@ export const classService = {
   getEffectiveness: async (id) => {
     try {
       const response = await api.get(`/classes/${id}/effectiveness`);
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error(`Error fetching class ${id} effectiveness:`, error);
-      throw error;
+      return { data: null };
     }
   }
 };
