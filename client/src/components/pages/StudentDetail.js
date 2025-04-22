@@ -1,9 +1,9 @@
 // src/components/pages/StudentDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
 import Spinner from '../layout/Spinner';
 import PerformanceIndicator from '../layout/PerformanceIndicator';
+import { studentService } from '../../services/api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -31,15 +31,32 @@ const StudentDetail = () => {
   const { id } = useParams();
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        const res = await axios.get(`/api/students/${id}`);
-        setStudent(res.data);
+        console.log(`Fetching details for student ID: ${id}`);
+        const result = await studentService.getById(id);
+        
+        if (result.error) {
+          setError(result.error);
+          setLoading(false);
+          return;
+        }
+        
+        if (!result.data) {
+          setError('No student data received');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('Student data received:', result.data);
+        setStudent(result.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching student details:', err);
+        console.error('Error in student detail component:', err);
+        setError('Failed to load student data. Please try again later.');
         setLoading(false);
       }
     };
@@ -51,8 +68,26 @@ const StudentDetail = () => {
     return <Spinner />;
   }
 
+  if (error) {
+    return (
+      <div className="card">
+        <div className="alert alert-danger">{error}</div>
+        <Link to="/students" className="btn">
+          Back to Students
+        </Link>
+      </div>
+    );
+  }
+
   if (!student) {
-    return <div>Student not found</div>;
+    return (
+      <div className="card">
+        <div className="alert alert-danger">Student not found</div>
+        <Link to="/students" className="btn">
+          Back to Students
+        </Link>
+      </div>
+    );
   }
 
   // Prepare chart data
@@ -158,9 +193,9 @@ const StudentDetail = () => {
       <div className="card">
         <h3>Student Reflection</h3>
         <div className="essay">
-          {student.essay.split('\n').map((paragraph, index) => (
+          {student.essay ? student.essay.split('\n').map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
-          ))}
+          )) : <p>No reflection available</p>}
         </div>
       </div>
 

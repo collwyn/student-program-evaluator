@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../layout/Spinner';
 import EffectivenessIndicator from '../layout/EffectivenessIndicator';
+import { classService, studentService } from '../../services/api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -32,24 +33,53 @@ const ClassDetail = () => {
   const [classData, setClassData] = useState(null);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const classRes = await axios.get(`/api/classes/${id}`);
-        setClassData(classRes.data);
+        console.log(`Fetching details for class ID: ${id}`);
+        const result = await classService.getById(id);
         
-        // Fetch full student details for each student in the class
-        const studentPromises = classRes.data.students.map(student => 
-          axios.get(`/api/students/${student._id}`)
-        );
+        if (result.error) {
+          setError(result.error);
+          setLoading(false);
+          return;
+        }
         
-        const studentResponses = await Promise.all(studentPromises);
-        setStudents(studentResponses.map(res => res.data));
+        if (!result.data) {
+          setError('No class data received');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('Class data received:', result.data);
+        setClassData(result.data);
+        
+        // Fetch student details
+        if (result.data.students && result.data.students.length > 0) {
+          console.log(`Fetching details for ${result.data.students.length} students`);
+          
+          const studentPromises = result.data.students.map(student => 
+            studentService.getById(student._id || student)
+          );
+          
+          const studentResponses = await Promise.all(studentPromises);
+          const validStudents = studentResponses
+            .filter(response => response && response.data)
+            .map(response => response.data);
+          
+          console.log(`Retrieved ${validStudents.length} students successfully`);
+          setStudents(validStudents);
+        } else {
+          console.log('No students in this class');
+          setStudents([]);
+        }
         
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching class details:', err);
+        console.error('Error in class detail component:', err);
+        setError('Failed to load class data. Please try again later.');
         setLoading(false);
       }
     };
@@ -61,8 +91,26 @@ const ClassDetail = () => {
     return <Spinner />;
   }
 
+  if (error) {
+    return (
+      <div className="card">
+        <div className="alert alert-danger">{error}</div>
+        <Link to="/classes" className="btn">
+          Back to Programs
+        </Link>
+      </div>
+    );
+  }
+
   if (!classData) {
-    return <div>Class not found</div>;
+    return (
+      <div className="card">
+        <div className="alert alert-danger">Program not found</div>
+        <Link to="/classes" className="btn">
+          Back to Programs
+        </Link>
+      </div>
+    );
   }
 
   // Prepare chart data
@@ -71,15 +119,36 @@ const ClassDetail = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const chartData = {
+  // Calculate the threshold line for effectiveness
+  const thresholdChartData = {
     labels: months,
     datasets: [
       {
-        label: 'Monthly Average Grades',
-        data: months.map(month => classData.monthlyAverages[month] || null),
-        borderColor: 'rgba(46, 204, 113, 0.6)',
+        label: 'Class Average',
+        data: months.map(month => 
+          classData.monthlyAverages && classData.monthlyAverages[month] 
+            ? classData.monthlyAverages[month] 
+            : null
+        ),
+        borderColor: 'rgba(46, 204, 113, 1)',
         backgroundColor: 'rgba(46, 204, 113, 0.1)',
         tension: 0.1,
+      },
+      {
+        label: 'Effective Threshold (75%)',
+        data: months.map(() => 75),
+        borderColor: 'rgba(46, 204, 113, 0.6)',
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
+      },
+      {
+        label: 'Ineffective Threshold (50%)',
+        data: months.map(() => 50),
+        borderColor: 'rgba(231, 76, 60, 0.6)',
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
       },
     ],
   };
@@ -116,36 +185,6 @@ const ClassDetail = () => {
     },
   };
 
-  // Calculate the threshold line for effectiveness
-  const thresholdChartData = {
-    labels: months,
-    datasets: [
-      {
-        label: 'Class Average',
-        data: months.map(month => classData.monthlyAverages[month] || null),
-        borderColor: 'rgba(46, 204, 113, 1)',
-        backgroundColor: 'rgba(46, 204, 113, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Effective Threshold (75%)',
-        data: months.map(() => 75),
-        borderColor: 'rgba(46, 204, 113, 0.6)',
-        borderDash: [5, 5],
-        fill: false,
-        pointRadius: 0,
-      },
-      {
-        label: 'Ineffective Threshold (50%)',
-        data: months.map(() => 50),
-        borderColor: 'rgba(231, 76, 60, 0.6)',
-        borderDash: [5, 5],
-        fill: false,
-        pointRadius: 0,
-      },
-    ],
-  };
-
   return (
     <div className="class-detail">
       <div className="page-header">
@@ -158,8 +197,8 @@ const ClassDetail = () => {
       <div className="grid">
         <div className="card">
           <h3>Program Information</h3>
-          <p><strong>Students Enrolled:</strong> {classData.students.length}</p>
-          <p><strong>Year Average:</strong> {classData.yearAverage.toFixed(2)}%</p>
+          <p><strong>Students Enrolled:</strong> {classData.students ? classData.students.length : 0}</p>
+          <p><strong>Year Average:</strong> {classData.yearAverage ? classData.yearAverage.toFixed(2) : 0}%</p>
           <p>
             <strong>Effectiveness:</strong>{' '}
             <EffectivenessIndicator effectiveness={classData.effectiveness} />
@@ -201,41 +240,45 @@ const ClassDetail = () => {
 
       <div className="card">
         <h3>Enrolled Students</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Grade</th>
-              <th>Year Average in this Program</th>
-              <th>Performance</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map(student => {
-              // Calculate the student's average in this specific class
-              const classGrades = student.monthlyGrades[classData._id];
-              const classGradeValues = classGrades ? Object.values(classGrades) : [];
-              const classAverage = classGradeValues.length > 0
-                ? classGradeValues.reduce((a, b) => a + b, 0) / classGradeValues.length
-                : 0;
-              
-              return (
-                <tr key={student._id}>
-                  <td>{student.name}</td>
-                  <td>{student.grade}</td>
-                  <td>{classAverage.toFixed(2)}%</td>
-                  <td>{student.performanceIndicator}</td>
-                  <td>
-                    <Link to={`/students/${student._id}`} className="btn">
-                      View Profile
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {students && students.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Grade</th>
+                <th>Year Average in this Program</th>
+                <th>Performance</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map(student => {
+                // Calculate the student's average in this specific class
+                const classGrades = student.monthlyGrades && student.monthlyGrades[classData._id];
+                const classGradeValues = classGrades ? Object.values(classGrades) : [];
+                const classAverage = classGradeValues.length > 0
+                  ? classGradeValues.reduce((a, b) => a + b, 0) / classGradeValues.length
+                  : 0;
+                
+                return (
+                  <tr key={student._id}>
+                    <td>{student.name}</td>
+                    <td>{student.grade}</td>
+                    <td>{classAverage.toFixed(2)}%</td>
+                    <td>{student.performanceIndicator}</td>
+                    <td>
+                      <Link to={`/students/${student._id}`} className="btn">
+                        View Profile
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <p>No students enrolled in this program.</p>
+        )}
       </div>
     </div>
   );
