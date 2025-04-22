@@ -17,13 +17,16 @@ const Classes = () => {
     const fetchClasses = async () => {
       try {
         console.log('Fetching classes...');
+        // Use the service instead of direct axios call
         const res = await classService.getAll();
         console.log('Classes data received:', res.data);
-        setClasses(res.data);
-        setFilteredClasses(res.data);
+        setClasses(Array.isArray(res.data) ? res.data : []);
+        setFilteredClasses(Array.isArray(res.data) ? res.data : []);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching classes:', err);
+        setClasses([]);
+        setFilteredClasses([]);
         setLoading(false);
       }
     };
@@ -33,19 +36,24 @@ const Classes = () => {
 
   useEffect(() => {
     // Apply filters
+    if (!classes || !Array.isArray(classes)) {
+      setFilteredClasses([]);
+      return;
+    }
+    
     let results = [...classes];
     
     // Apply search filter
     if (searchTerm) {
       results = results.filter(cls => 
-        cls.name.toLowerCase().includes(searchTerm.toLowerCase())
+        cls && cls.name && cls.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
     // Apply effectiveness filter
     if (filterEffectiveness) {
       results = results.filter(cls => 
-        cls.effectiveness === filterEffectiveness
+        cls && cls.effectiveness === filterEffectiveness
       );
     }
     
@@ -106,13 +114,13 @@ const Classes = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredClasses.map(cls => (
+            {filteredClasses && filteredClasses.map(cls => (
               <tr key={cls._id}>
                 <td>{cls.name}</td>
-                <td>{cls.students.length}</td>
-                <td>{cls.yearAverage.toFixed(2)}%</td>
+                <td>{cls.students ? cls.students.length : 0}</td>
+                <td>{(cls.yearAverage || 0).toFixed(2)}%</td>
                 <td>
-                  <EffectivenessIndicator effectiveness={cls.effectiveness} />
+                  <EffectivenessIndicator effectiveness={cls.effectiveness || 'Neutral'} />
                 </td>
                 <td>
                   <Link to={`/classes/${cls._id}`} className="btn">

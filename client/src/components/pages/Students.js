@@ -19,11 +19,13 @@ const Students = () => {
         console.log('Fetching students...');
         const res = await studentService.getAll();
         console.log('Students data received:', res.data);
-        setStudents(res.data);
-        setFilteredStudents(res.data);
+        setStudents(Array.isArray(res.data) ? res.data : []);
+        setFilteredStudents(Array.isArray(res.data) ? res.data : []);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching students:', err);
+        setStudents([]);
+        setFilteredStudents([]);
         setLoading(false);
       }
     };
@@ -33,19 +35,24 @@ const Students = () => {
 
   useEffect(() => {
     // Apply filters
+    if (!students || !Array.isArray(students)) {
+      setFilteredStudents([]);
+      return;
+    }
+    
     let results = [...students];
     
     // Apply search filter
     if (searchTerm) {
       results = results.filter(student => 
-        student.name.toLowerCase().includes(searchTerm.toLowerCase())
+        student && student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
     // Apply performance filter
     if (filterPerformance) {
       results = results.filter(student => 
-        student.performanceIndicator === filterPerformance
+        student && student.performanceIndicator === filterPerformance
       );
     }
     
@@ -107,14 +114,14 @@ const Students = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.map(student => (
+            {filteredStudents && filteredStudents.map(student => (
               <tr key={student._id}>
                 <td>{student.name}</td>
                 <td>{student.grade}</td>
                 <td>{student.age}</td>
-                <td>{student.averageYearGrade.toFixed(2)}%</td>
+                <td>{(student.averageYearGrade || 0).toFixed(2)}%</td>
                 <td>
-                  <PerformanceIndicator performance={student.performanceIndicator} />
+                  <PerformanceIndicator performance={student.performanceIndicator || 'Neutral'} />
                 </td>
                 <td>
                   <Link to={`/students/${student._id}`} className="btn">
