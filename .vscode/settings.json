@@ -1,0 +1,142 @@
+{
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": false
+  },
+  "jest.showCoverageOnLoad": true,
+  "jest.pathToJest": "npm test --",
+  "jest.debugCodeLens.showWhenTestStateIn": ["fail", "unknown", "pass"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "javascript.suggestionActions.enabled": false,
+  "typescript.suggestionActions.enabled": false,
+  
+  // Test file patterns
+  "files.associations": {
+    "*.test.js": "javascriptreact",
+    "*.test.jsx": "javascriptreact",
+    "*.spec.js": "javascriptreact",
+    "*.spec.jsx": "javascriptreact"
+  },
+
+  // Snippets configuration
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.snippetSuggestions": "top"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.snippetSuggestions": "top"
+  },
+
+  // Test explorer configuration
+  "testExplorer.codeLens": true,
+  "testExplorer.gutterDecoration": true,
+  "testExplorer.errorDecoration": true,
+  
+  // ESLint configuration for tests
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact"
+  ],
+  
+  // Recommended extensions
+  "extensions.recommendations": [
+    "orta.vscode-jest",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "hbenl.vscode-test-explorer"
+  ],
+
+  // Custom snippets for testing
+  "snippets": {
+    "Test Case": {
+      "prefix": "test",
+      "body": [
+        "test('$1', () => {",
+        "  $0",
+        "});"
+      ],
+      "description": "Create a test case"
+    },
+    "Async Test": {
+      "prefix": "testa",
+      "body": [
+        "test('$1', async () => {",
+        "  $0",
+        "});"
+      ],
+      "description": "Create an async test case"
+    },
+    "Describe Block": {
+      "prefix": "desc",
+      "body": [
+        "describe('$1', () => {",
+        "  $0",
+        "});"
+      ],
+      "description": "Create a describe block"
+    },
+    "Before Each": {
+      "prefix": "bef",
+      "body": [
+        "beforeEach(() => {",
+        "  $0",
+        "});"
+      ],
+      "description": "Create a beforeEach block"
+    },
+    "After Each": {
+      "prefix": "aft",
+      "body": [
+        "afterEach(() => {",
+        "  $0",
+        "});"
+      ],
+      "description": "Create an afterEach block"
+    }
+  },
+
+  // Problem matchers for test output
+  "problemMatcher": [
+    {
+      "owner": "javascript",
+      "fileLocation": ["relative", "${workspaceFolder}"],
+      "pattern": {
+        "regexp": "^\\s*at\\s+(.*):\\s+(\\d+):\\s+(\\d+)\\s*$",
+        "file": 1,
+        "line": 2,
+        "column": 3
+      }
+    }
+  ],
+
+  // Terminal settings for test output
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "bash",
+
+  // Code lens settings for tests
+  "javascript.referencesCodeLens.enabled": true,
+  "javascript.referencesCodeLens.showOnAllFunctions": true,
+
+  // Testing-specific color customization
+  "workbench.colorCustomizations": {
+    "testing.iconPassed": "#2ac3a2",
+    "testing.iconFailed": "#f14c4c",
+    "testing.iconErrored": "#f14c4c",
+    "testing.iconSkipped": "#848484",
+    "testing.peekBorder": "#f14c4c",
+    "testing.message.error.decorationForeground": "#f14c4c",
+    "testing.message.info.decorationForeground": "#2ac3a2"
+  },
+
+  // Test file organization
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.js": "$(capture).test.js,$(capture).spec.js",
+    "*.jsx": "$(capture).test.jsx,$(capture).spec.jsx"
+  }
+}
