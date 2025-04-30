@@ -1,0 +1,33 @@
+# Student/Program Evaluation SaaS Application Structure
+
+/client
+  /src
+    /components
+      /auth        # Authentication components
+      /dashboard   # Main dashboard views
+      /programs    # Program management
+      /students    # Student management
+      /analytics  # Analytics and reporting
+      /shared     # Shared/common components
+    /services     # API service layer
+    /utils       # Utility functions
+    /styles      # Global styles
+    /assets      # Images, icons, etc.
+
+/server
+  /src
+    /api         # API routes and controllers
+    /models      # MongoDB schemas
+    /services    # Business logic
+    /middleware  # Custom middleware
+    /utils      # Helper functions
+    /config     # Configuration files
+    /ai         # AI recommendation engine
+
+/shared
+  /types        # Shared TypeScript types
+  /constants    # Shared constants
+
+/docs          # Documentation
+  /api         # API documentation
+  /setup       # Setup instructions

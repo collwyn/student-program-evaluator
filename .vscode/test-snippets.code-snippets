@@ -1,0 +1,180 @@
+{
+  "Basic Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "test",
+    "body": [
+      "test('${1:description}', () => {",
+      "  ${2:// Arrange}",
+      "  ${3:const actual = }${4};",
+      "",
+      "  ${5:// Act}",
+      "  ${6}",
+      "",
+      "  ${7:// Assert}",
+      "  expect(${8:actual}).${9:toBe}(${10:expected});",
+      "});"
+    ],
+    "description": "Create a basic test case"
+  },
+
+  "Async Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testa",
+    "body": [
+      "test('${1:description}', async () => {",
+      "  ${2:// Arrange}",
+      "  ${3:const result = }await ${4:asyncFunction}();",
+      "",
+      "  ${5:// Assert}",
+      "  expect(${6:result}).${7:toBeDefined}();",
+      "});"
+    ],
+    "description": "Create an async test case"
+  },
+
+  "Describe Block": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "desc",
+    "body": [
+      "describe('${1:Component/Feature}', () => {",
+      "  ${2:// Setup}",
+      "  ${3:let }${4:testData};",
+      "",
+      "  beforeEach(() => {",
+      "    ${5:// Initialize test data}",
+      "    ${6}",
+      "  });",
+      "",
+      "  ${7:test('${8:should do something}', () => {",
+      "    ${9:// Test implementation}",
+      "  });}",
+      "});"
+    ],
+    "description": "Create a describe block with setup"
+  },
+
+  "React Component Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testc",
+    "body": [
+      "import React from 'react';",
+      "import { render, screen } from '@testing-library/react';",
+      "import userEvent from '@testing-library/user-event';",
+      "import ${1:ComponentName} from '../${2:path}';",
+      "",
+      "describe('${1:ComponentName}', () => {",
+      "  test('renders correctly', () => {",
+      "    render(<${1:ComponentName} ${3:props} />);",
+      "    expect(screen.getByText('${4:text}')).toBeInTheDocument();",
+      "  });",
+      "",
+      "  test('handles user interaction', async () => {",
+      "    const handleClick = jest.fn();",
+      "    render(<${1:ComponentName} onClick={handleClick} />);",
+      "",
+      "    await userEvent.click(screen.getByRole('button'));",
+      "    expect(handleClick).toHaveBeenCalled();",
+      "  });",
+      "});"
+    ],
+    "description": "Create a React component test suite"
+  },
+
+  "Mock Function": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "mockfn",
+    "body": [
+      "const ${1:mockFunction} = jest.fn(${2:()} => {",
+      "  ${3:return ${4:value};}",
+      "});"
+    ],
+    "description": "Create a Jest mock function"
+  },
+
+  "API Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testapi",
+    "body": [
+      "test('${1:API endpoint description}', async () => {",
+      "  // Mock API response",
+      "  global.fetch = jest.fn(() =>",
+      "    Promise.resolve({",
+      "      ok: true,",
+      "      json: () => Promise.resolve({ ${2:data: 'test'} })",
+      "    })",
+      "  );",
+      "",
+      "  const response = await ${3:fetchFunction}();",
+      "  expect(response.${4:data}).${5:toBe}(${6:'test'});",
+      "  expect(fetch).toHaveBeenCalledWith('${7:/api/endpoint}');",
+      "});"
+    ],
+    "description": "Create an API test with fetch mock"
+  },
+
+  "Error Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testerr",
+    "body": [
+      "test('${1:handles error condition}', () => {",
+      "  expect(() => {",
+      "    ${2:functionThatThrows}(${3:invalidInput});",
+      "  }).toThrow('${4:expected error message}');",
+      "});"
+    ],
+    "description": "Create an error handling test"
+  },
+
+  "Async Error Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testerra",
+    "body": [
+      "test('${1:handles async error}', async () => {",
+      "  await expect(${2:asyncFunction}(${3:invalidInput}))",
+      "    .rejects",
+      "    .toThrow('${4:expected error message}');",
+      "});"
+    ],
+    "description": "Create an async error handling test"
+  },
+
+  "Test Setup": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testsetup",
+    "body": [
+      "beforeEach(() => {",
+      "  ${1:// Setup code}",
+      "  ${2:jest.clearAllMocks();}",
+      "});",
+      "",
+      "afterEach(() => {",
+      "  ${3:// Cleanup code}",
+      "  ${4:jest.resetAllMocks();}",
+      "});"
+    ],
+    "description": "Create test setup and cleanup blocks"
+  },
+
+  "Mock Module": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "mockmodule",
+    "body": [
+      "jest.mock('${1:module-name}', () => ({",
+      "  ${2:functionName}: jest.fn(${3:() => ${4:'mocked-value'}}),",
+      "}));"
+    ],
+    "description": "Create a Jest module mock"
+  },
+
+  "Snapshot Test": {
+    "scope": "javascript,javascriptreact",
+    "prefix": "testsnap",
+    "body": [
+      "test('${1:matches snapshot}', () => {",
+      "  const { container } = render(<${2:Component} ${3:props} />);",
+      "  expect(container).toMatchSnapshot();",
+      "});"
+    ],
+    "description": "Create a snapshot test"
+  }
+}
