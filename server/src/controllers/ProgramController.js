@@ -39,17 +39,31 @@ class ProgramController {
       if (type) query.type = type;
       if (status) query.status = status;
 
-      const options = {
-        sort: sort.startsWith('-') ? 
-          { [sort.substring(1)]: -1 } : 
-          { [sort]: 1 },
-        page: parseInt(page),
-        limit: parseInt(limit),
-        populate: 'students'
-      };
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const sortOption = sort.startsWith('-')
+        ? { [sort.substring(1)]: -1 }
+        : { [sort]: 1 };
 
-      const programs = await Program.paginate(query, options);
-      res.json({ success: true, data: programs });
+      const [programs, total] = await Promise.all([
+        Program.find(query)
+          .sort(sortOption)
+          .skip((pageNum - 1) * limitNum)
+          .limit(limitNum)
+          .populate('students'),
+        Program.countDocuments(query)
+      ]);
+
+      res.json({
+        success: true,
+        data: {
+          docs: programs,
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        }
+      });
     } catch (error) {
       res.status(400).json({ success: false, error: error.message });
     }

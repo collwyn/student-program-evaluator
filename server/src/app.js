@@ -11,7 +11,6 @@ class App {
   constructor() {
     this.app = express();
     this.setupMiddleware();
-    this.setupDatabase();
     this.setupRoutes();
     this.setupErrorHandling();
   }
@@ -169,4 +168,7 @@ class App {
   }
 }
 
-module.exports = new App().getApp();
+const instance = new App();
+const app = instance.getApp();
+app.connectDB = instance.setupDatabase.bind(instance);
+module.exports = app;

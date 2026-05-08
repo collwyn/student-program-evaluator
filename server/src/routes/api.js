@@ -4,6 +4,10 @@ const ProgramController = require('../controllers/ProgramController');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const DataManagementService = require('../services/DataManagementService');
+const ProgramAnalyticsService = require('../services/ProgramAnalyticsService');
+const Program = require('../models/Program');
+const Student = require('../models/Student');
 
 // Auth middleware for all routes
 router.use(authMiddleware);
